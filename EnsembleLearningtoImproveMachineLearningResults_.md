@@ -19,7 +19,7 @@
 ## Bagging
   
   
-Bagging 表示的是 **b**ootstrap **agg**regat**ing**。降低一个估计的方差的一个方法就是平均多个估计。例如，我们可以在一个数据集的不同子集上（有放回的随机选取）训练 <img src="https://latex.codecogs.com/gif.latex?M"/> 个不同的树然后计算结果的平均值： <p align="center"><img src="https://latex.codecogs.com/gif.latex?f(x)=&#x5C;frac{1}{M}&#x5C;Sigma_{m=1}^M f_m(x)"/></p> bagging 使用[自助抽样法](https://en.wikipedia.org/wiki/Bootstrapping_(statistics ))（bootstrapping）来为每个基学习器获得一个数据集的子集。对于如何聚合多个基学习器的结果，bagging 在分类任务中使用投票，而在回归任务重使用平均。
+Bagging 表示的是 **b**ootstrap **agg**regat**ing**。降低一个估计的方差的一个方法就是平均多个估计。例如，我们可以在一个数据集的不同子集上（有放回的随机选取）训练 <img src="https://latex.codecogs.com/gif.latex?M"/> 个不同的树然后计算结果的平均值：<p align="center"><img src="https://latex.codecogs.com/gif.latex?f(x)=&#x5C;frac{1}{M}&#x5C;Sigma_{m=1}^M f_m(x)"/></p>bagging 使用[自助抽样法](https://en.wikipedia.org/wiki/Bootstrapping_(statistics ))（bootstrapping）来为每个基学习器获得一个数据集的子集。对于如何聚合多个基学习器的结果，bagging 在分类任务中使用投票，而在回归任务重使用平均。
   
 我们可以通过在 Iris 数据集上执行分类任务来学习 bagging。我们选择两种基学习器：决策树（decision tree）和 kNN 分类器。图一显示了基学习器在 Iris 上学习到的决策边界和他们 bagging 集成之后学习到的决策边界。
   
