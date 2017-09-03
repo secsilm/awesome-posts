@@ -78,7 +78,7 @@ Boosting 指的是能够将弱学习器转化为强学习器的一系列算法�
   
 如上图所示，每一个基学习器由一个深度为 1 的决策树组成，因此当 n_est=1 时模型只是基于一个特征阈值将样本空间分为两部分。上图也显示了集成大小是如何提高测试准确率的以及训练样本和测试样本的学习曲线。
   
-梯度树提升（**Gradient Tree Boosting**）是 boosting 在任意可微分损失函数的一种推广，既可用于回归也可用于分类，同样是顺序生成基学习器。<p align="center"><img src="https://latex.codecogs.com/gif.latex?F_m(x)=F_{m-1}(x)+&#x5C;gamma_mh_m(x)"/></p> 每一步基于当前模型 <img src="https://latex.codecogs.com/gif.latex?F_{m-1}(x)"/> 来计算损失 <img src="https://latex.codecogs.com/gif.latex?L"/>，并最小化 <img src="https://latex.codecogs.com/gif.latex?L"/> 来训练决策树 <img src="https://latex.codecogs.com/gif.latex?h_m(x)"/>：<p align="center"><img src="https://latex.codecogs.com/gif.latex?F_m(x)=F_{m-1}(x)+&#x5C;text{argmin}_h&#x5C;Sigma_{i=1}^n%20L(y_i,%20F_{m-1}(x_i)+h(x_i))"/></p> 使用该算法进行回归和分类任务时不同在于损失函数。
+梯度树提升（**Gradient Tree Boosting**）是 boosting 在任意可微分损失函数的一种推广，既可用于回归也可用于分类，同样是顺序生成基学习器。<p align="center"><img src="https://latex.codecogs.com/gif.latex?F_m(x)=F_{m-1}(x)+&#x5C;gamma_mh_m(x)"/></p> 每一步基于当前模型 <img src="https://latex.codecogs.com/gif.latex?F_{m-1}(x)"/>来计算损失 <img src="https://latex.codecogs.com/gif.latex?L"/>，并最小化 <img src="https://latex.codecogs.com/gif.latex?L"/>来训练决策树 <img src="https://latex.codecogs.com/gif.latex?h_m(x)"/>：<p align="center"><img src="https://latex.codecogs.com/gif.latex?F_m(x)=F_{m-1}(x)+&#x5C;text{argmin}_h&#x5C;Sigma_{i=1}^n%20L(y_i,%20F_{m-1}(x_i)+h(x_i))"/></p> 使用该算法进行回归和分类任务时不同在于损失函数。
   
 ## Stacking
   
