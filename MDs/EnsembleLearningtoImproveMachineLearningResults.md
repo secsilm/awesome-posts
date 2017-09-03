@@ -19,7 +19,7 @@
 ## Bagging
   
   
-Bagging 表示的是 **b**ootstrap **agg**regat**ing**。降低一个估计的方差的一个方法就是平均多个估计。例如，我们可以在一个数据集的不同子集上（有放回的随机选取）训练 <img src="https://latex.codecogs.com/gif.latex?M"/> 个不同的树然后计算结果的平均值： <p align="center"><img src="https://latex.codecogs.com/gif.latex?f(x)=&#x5C;frac{1}{M}&#x5C;Sigma_{m=1}^M f_m(x)"/></p> bagging 使用[自助抽样法](https://en.wikipedia.org/wiki/Bootstrapping_(statistics ))（bootstrapping）来为每个基学习器获得一个数据集的子集。对于如何聚合多个基学习器的结果，bagging 在分类任务中使用投票，而在回归任务重使用平均。
+Bagging 表示的是 **b**ootstrap **agg**regat**ing**。降低一个估计的方差的一个方法就是平均多个估计。例如，我们可以在一个数据集的不同子集上（有放回的随机选取）训练 <img src="https://latex.codecogs.com/gif.latex?M"/> 个不同的树然后计算结果的平均值： <p align="center"><img src="https://latex.codecogs.com/gif.latex?f(x)=&#x5C;frac{1}{M}&#x5C;Sigma_{m=1}^M%20f_m(x)"/></p> bagging 使用[自助抽样法](https://en.wikipedia.org/wiki/Bootstrapping_(statistics))（bootstrapping）来为每个基学习器获得一个数据集的子集。对于如何聚合多个基学习器的结果，bagging 在分类任务中使用投票，而在回归任务重使用平均。
   
 我们可以通过在 Iris 数据集上执行分类任务来学习 bagging。我们选择两种基学习器：决策树（decision tree）和 kNN 分类器。下图显示了基学习器在 Iris 上学习到的决策边界和他们 bagging 集成之后学习到的决策边界。
   
@@ -62,10 +62,10 @@ Boosting 指的是能够将弱学习器转化为强学习器的一系列算法�
   
 > 1. 初始化样本权重 <img src="https://latex.codecogs.com/gif.latex?{w_n}"/> 为 <img src="https://latex.codecogs.com/gif.latex?1&#x2F;N"/>
 > 2. for <img src="https://latex.codecogs.com/gif.latex?m=1"/> to <img src="https://latex.codecogs.com/gif.latex?M"/>
-> 3. 通过最小化加权误差函数 <img src="https://latex.codecogs.com/gif.latex?J_m"/> 训练一个分类器 <img src="https://latex.codecogs.com/gif.latex?y_m(x)"/>，此处 <img src="https://latex.codecogs.com/gif.latex?J_m = &#x5C;Sigma_{n=1}^{N} w_n^{(m)} 1[y_m(x_n) &#x5C;neq t_n]"/>
-> 4. 计算 <img src="https://latex.codecogs.com/gif.latex?&#x5C;epsilon_m = &#x5C;dfrac{&#x5C;Sigma_{n=1}^{N} w_n^{(m)}1[y_m(x_n) &#x5C;neq t_n]}{&#x5C;Sigma_{n=1}^{N} w_n^{(m)}}"/>
-> 5. 计算 <img src="https://latex.codecogs.com/gif.latex?&#x5C;alpha_m = &#x5C;text{log}(&#x5C;dfrac{1-&#x5C;epsilon_m}{&#x5C;epsilon_m})"/>
-> 6. 更新样本权重：<img src="https://latex.codecogs.com/gif.latex?w_n^{m+1} = w_n^m e^{&#x5C;alpha_m1[y_m(x_n) &#x5C;neq t_n]}"/>
+> 3. 通过最小化加权误差函数 <img src="https://latex.codecogs.com/gif.latex?J_m"/> 训练一个分类器 <img src="https://latex.codecogs.com/gif.latex?y_m(x)"/>，此处 <img src="https://latex.codecogs.com/gif.latex?J_m%20=%20&#x5C;Sigma_{n=1}^{N}%20w_n^{(m)}%201[y_m(x_n)%20&#x5C;neq%20t_n]"/>
+> 4. 计算 <img src="https://latex.codecogs.com/gif.latex?&#x5C;epsilon_m%20=%20&#x5C;dfrac{&#x5C;Sigma_{n=1}^{N}%20w_n^{(m)}1[y_m(x_n)%20&#x5C;neq%20t_n]}{&#x5C;Sigma_{n=1}^{N}%20w_n^{(m)}}"/>
+> 5. 计算 <img src="https://latex.codecogs.com/gif.latex?&#x5C;alpha_m%20=%20&#x5C;text{log}(&#x5C;dfrac{1-&#x5C;epsilon_m}{&#x5C;epsilon_m})"/>
+> 6. 更新样本权重：<img src="https://latex.codecogs.com/gif.latex?w_n^{m+1}%20=%20w_n^m%20e^{&#x5C;alpha_m1[y_m(x_n)%20&#x5C;neq%20t_n]}"/>
 > 7. end for
 > 8. 使用最终的模型进行预测：<img src="https://latex.codecogs.com/gif.latex?Y_M(x)=&#x5C;text{sign}&#x5C;left(&#x5C;Sigma_{m=1}{M}&#x5C;alpha_my_m(x)&#x5C;right)"/>
   
@@ -78,7 +78,7 @@ Boosting 指的是能够将弱学习器转化为强学习器的一系列算法�
   
 如上图所示，每一个基学习器由一个深度为 1 的决策树组成，因此当 n_est=1 时模型只是基于一个特征阈值将样本空间分为两部分。上图也显示了集成大小是如何提高测试准确率的以及训练样本和测试样本的学习曲线。
   
-梯度树提升（**Gradient Tree Boosting**）是 boosting 在任意可微分损失函数的一种推广，既可用于回归也可用于分类，同样是顺序生成基学习器。<p align="center"><img src="https://latex.codecogs.com/gif.latex?F_m(x)=F_{m-1}(x)+&#x5C;gamma_mh_m(x)"/></p> 每一步基于当前模型 <img src="https://latex.codecogs.com/gif.latex?F_{m-1}(x)"/> 来计算损失 <img src="https://latex.codecogs.com/gif.latex?L"/>，并最小化 <img src="https://latex.codecogs.com/gif.latex?L"/> 来训练决策树 <img src="https://latex.codecogs.com/gif.latex?h_m(x)"/>：<p align="center"><img src="https://latex.codecogs.com/gif.latex?F_m(x)=F_{m-1}(x)+&#x5C;text{argmin}_h&#x5C;Sigma_{i=1}^n L(y_i, F_{m-1}(x_i)+h(x_i))"/></p> 使用该算法进行回归和分类任务时不同在于损失函数。
+梯度树提升（**Gradient Tree Boosting**）是 boosting 在任意可微分损失函数的一种推广，既可用于回归也可用于分类，同样是顺序生成基学习器。<p align="center"><img src="https://latex.codecogs.com/gif.latex?F_m(x)=F_{m-1}(x)+&#x5C;gamma_mh_m(x)"/></p> 每一步基于当前模型 <img src="https://latex.codecogs.com/gif.latex?F_{m-1}(x)"/> 来计算损失 <img src="https://latex.codecogs.com/gif.latex?L"/>，并最小化 <img src="https://latex.codecogs.com/gif.latex?L"/> 来训练决策树 <img src="https://latex.codecogs.com/gif.latex?h_m(x)"/>：<p align="center"><img src="https://latex.codecogs.com/gif.latex?F_m(x)=F_{m-1}(x)+&#x5C;text{argmin}_h&#x5C;Sigma_{i=1}^n%20L(y_i,%20F_{m-1}(x_i)+h(x_i))"/></p> 使用该算法进行回归和分类任务时不同在于损失函数。
   
 ## Stacking
   
@@ -87,7 +87,7 @@ Stacking 是一种通过元分类器（meta-classifier）或者元回归器（me
   
 基模型通常由不同的学习算法组成，因此 stacking 集成通常是异构的。下面的算法总结了 stacking ：
   
-> 1. 输入：训练样本 <img src="https://latex.codecogs.com/gif.latex?D=&#x5C;{x_i, y_i&#x5C;}_{i=1}^{m}"/>
+> 1. 输入：训练样本 <img src="https://latex.codecogs.com/gif.latex?D=&#x5C;{x_i,%20y_i&#x5C;}_{i=1}^{m}"/>
 > 2. 输出：集成分类器 <img src="https://latex.codecogs.com/gif.latex?H"/>
 > 3. *Step 1：学习基分类器*
 > 4. for <img src="https://latex.codecogs.com/gif.latex?t=1"/> to <img src="https://latex.codecogs.com/gif.latex?T"/>
@@ -95,7 +95,7 @@ Stacking 是一种通过元分类器（meta-classifier）或者元回归器（me
 > 6. end for
 > 7. *Step 2：构建新数据*
 > 8. for <img src="https://latex.codecogs.com/gif.latex?i=1"/> to <img src="https://latex.codecogs.com/gif.latex?m"/>
-> 9. <img src="https://latex.codecogs.com/gif.latex?D_h=&#x5C;{x_i^{&#x27;}, y_i&#x5C;}"/>，其中 <img src="https://latex.codecogs.com/gif.latex?x_i^{&#x27;}=&#x5C;{h_1(x_i), &#x5C;ldots, h_T(x_i)&#x5C;}"/>
+> 9. <img src="https://latex.codecogs.com/gif.latex?D_h=&#x5C;{x_i^{&#x27;},%20y_i&#x5C;}"/>，其中 <img src="https://latex.codecogs.com/gif.latex?x_i^{&#x27;}=&#x5C;{h_1(x_i),%20&#x5C;ldots,%20h_T(x_i)&#x5C;}"/>
 > 10. end for
 > 11. *Step 3：学习元分类器*
 > 12. 基于 <img src="https://latex.codecogs.com/gif.latex?D_h"/> 训练 <img src="https://latex.codecogs.com/gif.latex?H"/>
