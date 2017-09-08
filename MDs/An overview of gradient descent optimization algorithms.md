@@ -20,7 +20,22 @@
 
 ### Batch gradient descent
 
-标准的梯度下降，即批量梯度下降（batch gradient descent），在整个训练集上计算损失函数关于参数 $\theta$ 的梯度。
+标准的梯度下降，即批量梯度下降（batch gradient descent）（ *译者注：以下简称 BGD* ），在整个训练集上计算损失函数关于参数 $\theta$ 的梯度。
 
 $$\theta = \theta - \eta \cdot \nabla_\theta J( \theta)$$
 
+由于为了一次参数更新我们需要在整个训练集上计算梯度，导致 BGD 可能会非常慢，而且在训练集太大而不能全部载入内存的时候会很棘手。BGD 也不允许我们在线更新模型参数，即实时增加新的训练样本。
+
+下面是 BGD 的代码片段：
+
+```python
+for i in range(nb_epochs):
+    params_grad = evaluate_gradient(loss_function, data, params)
+    params = params - learning_rate * params_grad
+```
+
+其中 `nb_epochs` 是我们预先定义好的迭代次数（epochs），我们首先在整个训练集上计算损失函数关于模型参数 `params` 的梯度向量 `params_grad`。其实目前最新的深度学习库都已经提供了关于一些参数的高效自动求导。如果你要自己求导求梯度，那你最好使用梯度检查（gradient checking），在 [这里](http://cs231n.github.io/neural-networks-3/) 查看关于如何进行合适的梯度检查的提示。
+
+然后我们在梯度的反方向更新模型参数，而学习率决定了每次更新的步长大小。BGD 对于凸误差曲面（convex error surface）保证收敛到全局最优点，而对于非凸曲面（non-convex surface）则是局部最优点。
+
+### Stochastic gradient descent
