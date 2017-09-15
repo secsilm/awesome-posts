@@ -95,3 +95,53 @@ for i in range(nb_epochs):
 
 ## Gradient descent optimization algorithms
 
+接下来，我们将会概述一些在深度学习社区常用的算法，这些算法解决了我们前面提到的挑战。我们不会讨论实际上在高维数据集上不可行的算法，例如二阶方法中的 [牛顿法](https://en.wikipedia.org/wiki/Newton%27s_method_in_optimization)。
+
+### Momentum
+
+SGD 在遇到沟壑（ravines）会比较困难，即在一个维度上比另一个维度更陡峭的曲面，这些曲面通常包围着局部最优点。在这些场景中，SGD 震荡且缓慢的沿着沟壑的下坡方向朝着局部最优点前进，如图 2 所示。
+
+![SGD without momentum](http://ruder.io/content/images/2015/12/without_momentum.gif)
+*图 2：不带动量的 SGD*
+
+动量（Momentum）是一种在相关方向加速 SGD 的方法，并且能够减少震荡，如图 3 所示。
+
+![SGD without momentum](http://ruder.io/content/images/2015/12/with_momentum.gif)
+*图 3：带动量的 SGD*
+
+它在当前的更新向量中加入了先前一步的状态：
+
+$$
+\begin{aligned}
+v_t &= \gamma v_{t-1} + \eta \nabla_\theta J( \theta) \\  
+\theta &= \theta - v_t
+\end{aligned}
+$$
+
+注意：一些实现可能改变了公式中的符号。动量项 $\gamma$ 通常设置为 0.9 或者相似的值。
+
+本质上来说，当我们使用动量时，类似于我们把球推下山的过程。在球下山的过程中，球累积动量使其速度越来越快（直到达到其最终速度，如果有空气阻力的话，即 $\gamma \lt 1$）。相同的事情也发生在我们的参数更新中：对于梯度指向方向相同的维度动量项增大，对于梯度改变方向的维度动量项减小。最终，我们获得了更快的收敛并减少了震荡。
+
+### Nesterov accelerated gradient
+
+然而，一个球盲目的沿着斜坡下山，这不是我们希望看到的。我们希望有一个聪明的球，他知道将要去哪并可以在斜坡变成上坡前减速。Nesterov accelerated gradient（ *译者注：以下简称 NAG* ）就是这样一种给予我们的动量项预知能力的方法。我们知道我们使用动量项 $\gamma v_{t-1}$ 来更新 $\theta$。因此计算 $\theta-\gamma v_{t-1}$ 给了我们一个关于的参数下一个位置的估计（这里省略了梯度项），这是一个简单粗暴的想法。我们现在可以通过计算 $\theta$ 下一个位置而不是当前位置的梯度来实现「向前看」。
+
+$$
+\begin{aligned}
+v_t &= \gamma v_{t-1} + \eta \nabla_\theta J( \theta - \gamma v_{t-1} ) \\  
+\theta &= \theta - v_t
+\end{aligned}
+$$
+
+我们仍然设置 $\gamma$ 为 0.9。动量法首先计算当前梯度（图 4 中的小蓝色向量）,然后在更新累积梯度（updated accumulated gradient）方向上大幅度的跳跃（图 4 中的大蓝色向量）。与此不同的是，NAG 首先在先前的累积梯度（previous accumulated gradient）方向上进行大幅度的跳跃（图 4 中的棕色向量），评估这个梯度并做一下修正（图 4 中的红色向量），这就构成一次完整的 NAG 更新（图 4 中的绿色向量）。这种预期更新防止我们进行的太快，也带来了更高的相应速度，这在一些任务中非常有效的提升了 RNN 的性能 [8]。
+
+![Nesterov update](http://ruder.io/content/images/2016/09/nesterov_update_vector.png)
+*图 4：Nesterov 更新，来自 [G. Hinton's lecture 6c](http://www.cs.toronto.edu/~tijmen/csc321/slides/lecture_slides_lec6.pdf)*
+
+可以在 [这里]() 查看对 NAG 的另一种直观解释，此外 Ilya Sutskever 在他的博士论文中也给出了详细解释 [9]。
+
+现在我们已经能够依据误差函数的斜率来调整更新，并加快 SGD 的速度，此外我们也想根据每个参数的重要性来决定进行更大还是更小的更新。
+
+### Adagrad
+
+Adagrad 就是这样一种解决这个问题的基于梯度的优化算法：根据参数来调整学习率，对于不常见的参数给予更大的更新，而对于常见的给予更小的更新。
