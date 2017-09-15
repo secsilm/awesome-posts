@@ -101,12 +101,12 @@ for i in range(nb_epochs):
 
 SGD 在遇到沟壑（ravines）会比较困难，即在一个维度上比另一个维度更陡峭的曲面，这些曲面通常包围着局部最优点。在这些场景中，SGD 震荡且缓慢的沿着沟壑的下坡方向朝着局部最优点前进，如图 2 所示。
 
-![SGD without momentum](http://ruder.io/content/images/2015/12/without_momentum.gif)
+![SGD without momentum](http://ruder.io/content/images/2015/12/without_momentum.gif)  
 *图 2：不带动量的 SGD*
 
 动量（Momentum）是一种在相关方向加速 SGD 的方法，并且能够减少震荡，如图 3 所示。
 
-![SGD without momentum](http://ruder.io/content/images/2015/12/with_momentum.gif)
+![SGD without momentum](http://ruder.io/content/images/2015/12/with_momentum.gif)  
 *图 3：带动量的 SGD*
 
 它在当前的更新向量中加入了先前一步的状态：
@@ -135,7 +135,7 @@ $$
 
 我们仍然设置 $\gamma$ 为 0.9。动量法首先计算当前梯度（图 4 中的小蓝色向量）,然后在更新累积梯度（updated accumulated gradient）方向上大幅度的跳跃（图 4 中的大蓝色向量）。与此不同的是，NAG 首先在先前的累积梯度（previous accumulated gradient）方向上进行大幅度的跳跃（图 4 中的棕色向量），评估这个梯度并做一下修正（图 4 中的红色向量），这就构成一次完整的 NAG 更新（图 4 中的绿色向量）。这种预期更新防止我们进行的太快，也带来了更高的相应速度，这在一些任务中非常有效的提升了 RNN 的性能 [8]。
 
-![Nesterov update](http://ruder.io/content/images/2016/09/nesterov_update_vector.png)
+![Nesterov update](http://ruder.io/content/images/2016/09/nesterov_update_vector.png)  
 *图 4：Nesterov 更新，来自 [G. Hinton's lecture 6c](http://www.cs.toronto.edu/~tijmen/csc321/slides/lecture_slides_lec6.pdf)*
 
 可以在 [这里]() 查看对 NAG 的另一种直观解释，此外 Ilya Sutskever 在他的博士论文中也给出了详细解释 [9]。
@@ -144,4 +144,29 @@ $$
 
 ### Adagrad
 
-Adagrad 就是这样一种解决这个问题的基于梯度的优化算法：根据参数来调整学习率，对于不常见的参数给予更大的更新，而对于常见的给予更小的更新。
+Adagrad 就是这样一种解决这个问题的基于梯度的优化算法：根据参数来调整学习率，对于不常见的参数给予更大的更新，而对于常见的给予更小的更新。因此，Adagrad 非常适用于稀疏数据。Dean 等人 [4] 发现 Adagrad 能够大幅提高 SGD 的鲁棒性，并在 Google 用其训练大规模神经网络，这其中就包括 [在 YouTube 中学习识别猫](http://www.wired.com/2012/06/google-x-neural-network/)。除此之外，Pennington 等人 [5] 使用 Adagrad 来训练 GloVe 词嵌入，因为罕见的词汇需要比常见词更大的更新。
+
+前面我们在对所有参数 $\theta$ 更新时每个参数 $\theta_i$ 使用相同的学习率 $\eta$。Adagrad 在每个时间点 $t$ 对每个参数 $\theta_i$ 使用的学习率都不同，我们首先展现每个参数的更新，然后再向量化。简单起见，我们使用 $g_{t,i}$ 来表示目标函数关于参数 $\theta_i$ 在时间点 $t$ 时的梯度：
+
+$$g_{t, i} = \nabla_\theta J( \theta_i )$$
+
+SGD 在每个时间点 $t$ 对每个参数 $\theta_i$ 的更新变为：
+
+$$\theta_{t+1,i} = \theta_{t,i} - \eta \cdot g_{t,i}$$
+
+在这个更新规则里，Adagrad 在每个时间点 $t$ 对每个参数 $\theta_i$ 都会基于过去的梯度修改学习率 $\eta$。
+
+$$\theta_{t+1, i} = \theta_{t, i} - \dfrac{\eta}{\sqrt{G_{t, ii} + \epsilon}} \cdot g_{t, i}$$
+
+其中 $G_{t} \in \mathbb{R}^{d \times d}$ 是一个对角矩阵，对角元素 $G_t[i, i]$ 是参数 $\theta_i$ 从开始到时间点 $t$ 为止的梯度平方和，$\epsilon$ 是一个平滑项，用于防止分母为 0 ，通常为 $10^{-8}$ 左右。有趣的是，如果去掉开方操作，算法性能会大幅下降。
+
+由于 $G_t$ 的对角元素是关于所有参数的过去的梯度的平方和，我们可以将上面的实现向量化，即使用点乘 $\odot$ ：
+
+$$\theta_{t+1} = \theta_{t} - \dfrac{\eta}{\sqrt{G_{t} + \epsilon}} \odot g_{t}$$
+
+Adagrad 最大的一个优点是我们可以不用手动的调整学习率。大多数实现使用一个默认值 0.01 。
+
+Adagrad 主要的缺点是分母中累积的平方和梯度：由于每一个新添加的项都是正的，导致累积和在训练期间不断增大。这反过来导致学习率不断减小，最终变成无限小，这时算法已经不能再继续学习新东西了。下面的这个算法就解决了这个问题。
+
+### Adadelta
+
