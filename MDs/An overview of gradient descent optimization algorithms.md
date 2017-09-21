@@ -170,3 +170,51 @@ Adagrad 主要的缺点是分母中累积的平方和梯度：由于每一个新
 
 ### Adadelta
 
+Adadelta [6] 是 Adagrad 的扩展，旨在帮助缓解后者学习率单调下降的问题。与 Adagrad 累积过去所有梯度的平方和不同，Adadelta 限制在过去某个窗口大小为 $w$ 的大小内的梯度。
+
+存储先前 $w$ 个梯度的平方效率不高，Adadelta 的梯度平方和被递归的定义为过去所有梯度平方的衰减平均值（decaying average）。在 $t$ 时刻的平均值 $E[g^2]_t$ 仅仅取决于先前的平均值和当前的梯度：
+
+$$E[g^2]_t = \gamma E[g^2]_{t-1} + (1-\gamma)g_t^2$$
+
+其中 $\gamma$ 类似于动量项，我们同样设置为 0.9 左右。为清楚起见，我们根据参数更新向量 $\Delta \theta_t$ 来重写一般的 SGD 更新公式：
+
+$$
+\begin{aligned}
+\Delta \theta_t &= - \eta \cdot g_{t, i} \\
+\theta_{t+1} &= \theta_t + \Delta \theta_t
+\end{aligned}
+$$
+
+先前我们推导过的 Adagrad 的参数更新向量是：
+
+$$\Delta \theta_t = - \dfrac{\eta}{\sqrt{G_{t} + \epsilon}} \odot g_{t}$$
+
+我们现在用过去梯度平方和的衰减平均 $E[g^2]_t$ 来代替对角矩阵 $G_t$：
+
+$$\Delta \theta_t = - \dfrac{\eta}{\sqrt{E[g^2]_t + \epsilon}} g_{t}$$
+
+由于分母只是一个梯度的均方误差（Root Mean Squared，RMS），我们可以用缩写来代替：
+
+$$\Delta \theta_t = - \dfrac{\eta}{RMS[g]_{t}} g_t$$
+
+作者注意到这个更新中的单位（units）不匹配（SGD，动量和 Adagrad 也是），即更新向量应该具有和参数一样的单位。为解决这个问题，他们首先定义了另一个指数衰减平均,但是这次不是关于梯度的平方，而是关于参数更新的平方：
+
+$$E[\Delta \theta^2]_t = \gamma E[\Delta \theta^2]_{t-1} + (1 - \gamma) \Delta \theta^2_t$$
+
+那么参数更新的均方误差是：
+
+$$RMS[\Delta \theta]_{t} = \sqrt{E[\Delta \theta^2]_t + \epsilon}$$
+
+由于 $RMS[\Delta \theta]_{t}$ 未知，我们可以使用上一步的来估计。用带有 $RMS[\Delta \theta]_{t-1}$ 的参数更新规则代替学习率 $\eta$ 就得到了 Adadelta 最终的更新规则：
+
+$$
+\begin{aligned}
+\Delta \theta_t &= - \dfrac{RMS[\Delta \theta]_{t-1}}{RMS[g]_{t}} g_{t} \\
+\theta_{t+1} &= \theta_t + \Delta \theta_t 
+\end{aligned}
+$$
+
+使用 Adadelta 时我们甚至不需要指定一个默认的学习率，因为它已经不在更新规则中了。
+
+### RMSprop
+
