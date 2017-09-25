@@ -218,3 +218,43 @@ $$
 
 ### RMSprop
 
+RMSprop 是一种未发布的自适应学习率的方法，由 Geoff Hinton 在 [Lecture 6e of his Coursera Class](http://www.cs.toronto.edu/~tijmen/csc321/slides/lecture_slides_lec6.pdf) 中提出。
+
+RMSprop 和 Adadelta 在同一时间被独立地发明出来，都是为了解决 Adagrad 的学习率递减问题。事实上 RMSprop 与我们上面讨论过的 Adadelta 的第一个更新向量一模一样：
+
+$$
+\begin{aligned}
+E[g^2]_t &= 0.9 E[g^2]_{t-1} + 0.1 g^2_t \\  
+\theta_{t+1} &= \theta_{t} - \dfrac{\eta}{\sqrt{E[g^2]_t + \epsilon}} g_{t}
+\end{aligned}
+$$
+
+RMSprop 也是将学习率除以平方梯度的指数衰减平均值。Hinton 建议将 $\gamma$ 设为 0.9 ，默认学习率 $\eta$ 设为 0.001 。
+
+### Adam
+
+Adaptive Moment Estimation (Adam) [15] 是另一种为每个参数计算自适应学习率的方法。除了像 Adadelta 和 RMSprop 一样存储历史平方梯度 $v_t$ 的指数衰减平均值外，Adam 也存储历史梯度 $m_t$ 的指数衰减平均值，类似于动量：
+
+$$
+\begin{aligned}
+m_t &= \beta_1 m_{t-1} + (1 - \beta_1) g_t \\  
+v_t &= \beta_2 v_{t-1} + (1 - \beta_2) g_t^2  
+\end{aligned}
+$$
+
+其中 $m_t$ 和 $v_t$ 分别是梯度在第一时刻（平均值，the mean）和第二时刻（未中心化的方差，the uncentered variance）的估计值，也就是这个方法的名称。由于 $m_t$ 和 $v_t$ 用零向量初始化，Adam 的作者发现他们趋向于 0 ，特别是最开始的时候（*the initial time steps*）和衰减率很小的时候（即 $\beta_1$ 和 $\beta_2$ 接近于 1）。
+
+他们通过计算偏见纠正的（bias-corrected）的第一和第二时刻的估计值来抵消这个问题：
+
+$$
+\begin{aligned}
+\hat{m}_t &= \dfrac{m_t}{1 - \beta^t_1} \\
+\hat{v}_t &= \dfrac{v_t}{1 - \beta^t_2}
+\end{aligned}
+$$
+
+然后他们使用这些公式来更新参数，就像 Adadelta 和 RMSprop 一样：
+
+$$\theta_{t+1} = \theta_{t} - \dfrac{\eta}{\sqrt{\hat{v}_t} + \epsilon} \hat{m}_t$$
+
+作者建议 $\beta_1$ 的默认值为 0.9 ， $\beta_2$ 的默认值为 0.999 ，$\epsilon$ 的默认值为 $10^{-8}$ 。他们证明 Adam 在实践中非常有效，而且对比其他自适应学习率算法也有优势。
