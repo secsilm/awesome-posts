@@ -46,7 +46,7 @@ $$\theta = \theta - \eta \cdot \nabla_\theta J(\theta;x^{x(i)};y^{(i)})$$
 
 BGD 对于大数据集来说执行了很多冗余的计算，因为在每一次参数更新前都要计算很多相似样本的梯度。SGD 通过一次执行一次更新解决了这种冗余。因此通常 SGD 的速度会非常快而且可以被用于在线学习。SGD 以高方差的特点进行连续参数更新，导致目标函数严重震荡，如图 1 所示。
 
-![](https://upload.wikimedia.org/wikipedia/commons/f/f3/Stogra.png)
+![](https://upload.wikimedia.org/wikipedia/commons/f/f3/Stogra.png)  
 *图 1：SGD 震荡，来自 [Wikipedia](https://upload.wikimedia.org/wikipedia/commons/f/f3/Stogra.png)*
 
 BGD 能够收敛到（局部）最优点，然而 SGD 的震荡特点导致其可以跳到新的潜在的可能更好的局部最优点。已经有研究显示当我们慢慢的降低学习率时，SGD 拥有和 BGD 一样的收敛性能，对于非凸和凸曲面几乎同样能够达到局部或者全局最优点。
@@ -244,7 +244,7 @@ $$
 
 其中 $m_t$ 和 $v_t$ 分别是梯度在第一时刻（平均值，the mean）和第二时刻（未中心化的方差，the uncentered variance）的估计值，也就是这个方法的名称。由于 $m_t$ 和 $v_t$ 用零向量初始化，Adam 的作者发现他们趋向于 0 ，特别是最开始的时候（*the initial time steps*）和衰减率很小的时候（即 $\beta_1$ 和 $\beta_2$ 接近于 1）。
 
-他们通过计算偏见纠正的（bias-corrected）的第一和第二时刻的估计值来抵消这个问题：
+他们通过计算偏差纠正的（bias-corrected）的第一和第二时刻的估计值来抵消这个问题：
 
 $$
 \begin{aligned}
@@ -258,3 +258,31 @@ $$
 $$\theta_{t+1} = \theta_{t} - \dfrac{\eta}{\sqrt{\hat{v}_t} + \epsilon} \hat{m}_t$$
 
 作者建议 $\beta_1$ 的默认值为 0.9 ， $\beta_2$ 的默认值为 0.999 ，$\epsilon$ 的默认值为 $10^{-8}$ 。他们证明 Adam 在实践中非常有效，而且对比其他自适应学习率算法也有优势。
+
+### AdaMax
+
+Adam 的更新规则中的 $v_t$ 成比例的缩放了梯度，正比于历史梯度的 $\ell_2$ 范数（通过 $v_{t-1}$ 项）和当前梯度 $|g_t|^2$（*译者注：此段话我非常不确定是这么翻译的，贴上原文：The $v_t$ factor in the Adam update rule scales the gradient inversely proportionally to the $\ell_2$ norm of the past gradients (via the vt−1vt−1 term) and current gradient $|g_t|^2$*）：
+
+$$v_t = \beta_2 v_{t-1} + (1 - \beta_2) |g_t|^2$$
+
+我们可以将此推广到 $\ell_p$ 范数。注意 Kingma 和 Ba 也将 $\beta_2$ 参数化为 $\beta_2^p$：
+
+$$v_t = \beta_2^p v_{t-1} + (1 - \beta_2^p) |g_t|^p$$
+
+当 $p$ 非常大的时候通常会导致数值上的不稳定（*numerically unstable*），这也是实际中通常使用 $\ell_1$ 和 $\ell_2$ 的原因。然而，$\ell_\infty$ 通常也会比较稳定。因此，作者提出了 AdaMax（Kingma and Ba, 2015），显示了结合了 $\ell_\infty$ 的 $v_t$ 也能够收敛到下面的更稳定的值。为了避免与 Adam 混淆，我们使用 $u_t$ 来表示无限范数约束的 $v_t$（infinity norm-constrained）：
+
+$$
+\begin{aligned}
+u_t &= \beta_2^\infty v_{t-1} + (1 - \beta_2^\infty) |g_t|^\infty\\  
+              & = \max(\beta_2 \cdot v_{t-1}, |g_t|)
+\end{aligned}
+$$
+
+我们现在可以将此加进 Adam 的更新规则里，用 $u_t$ 代替 $\sqrt{\hat{v}_t} + \epsilon$，得到 AdaMax 的更新规则：
+
+$$\theta_{t+1} = \theta_{t} - \dfrac{\eta}{u_t} \hat{m}_t$$
+
+注意到 $u_t$ 依赖于 **max** 操作，这不像 Adam 中的 $m_t$ 和 $v_t$ 那样容易趋向于 0（*bias towards zero*），这也是我们不需要为 $u_t$ 计算偏差纠正的原因。建议的默认值是 $\eta = 0.002$，$\beta_1 = 0.9$ 和 $\beta_2 = 0.999$ 。
+
+### Nadam
+
