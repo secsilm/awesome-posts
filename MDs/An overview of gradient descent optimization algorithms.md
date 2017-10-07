@@ -286,3 +286,96 @@ $$\theta_{t+1} = \theta_{t} - \dfrac{\eta}{u_t} \hat{m}_t$$
 
 ### Nadam
 
+ 正如前面说的那样，Adam 可以看成 RMSprop 和动量的组合：RMSprop 贡献了历史平方梯度的指数衰减的平均值 $v_t$ ，而动量则负责历史梯度的指数衰减平均值 $m_t$ 。我们也看到 NAG 要优于普通的动量。
+
+Nadam（Nesterov-accelerated Adaptive Moment Estimation）[24] 结合了 Adam 和 NAG 。为了将 NAG 融进 Adam 中，我们需要更改其中的动量项 $m_t$ 。
+
+首先，让我们使用当前的符号回顾一下动量更新规则：
+
+$$
+\begin{aligned}
+g_t &= \nabla_{\theta_t}J(\theta_t)\\  
+m_t &= \gamma m_{t-1} + \eta g_t\\  
+\theta_{t+1} &= \theta_t - m_t
+\end{aligned}
+$$
+
+其中 $J$ 是我们的目标函数，$\gamma$ 是动量衰减项，$\eta$ 是我们的步长。将 $m_t$ 代入上面的第三个式子展开得到：
+
+$$\theta_{t+1} = \theta_t - ( \gamma m_{t-1} + \eta g_t)$$
+
+这再次证明了动量更新涉及两个方向：先前动量向量的方向和当前梯度的方向。
+
+在计算梯度前通过动量更新参数，这使得 NAG 允许我们在梯度方向上执行一个更准确的步骤。因此我们只需更改 $g_t$ 来将 NAG 融进去：
+
+$$
+\begin{aligned}
+g_t &= \nabla_{\theta_t}J(\theta_t - \gamma m_{t-1})\\
+m_t &= \gamma m_{t-1} + \eta g_t\\
+\theta_{t+1} &= \theta_t - m_t
+\end{aligned}
+$$
+
+Dozat 提出按以下方式来修改 NAG ：与应用动量步骤两次不同的是 —— 一次用来更新梯度 $g_t$ 和 一次用来更新参数 $\theta_{t+1}$ ，我们现在直接对当前参数应用一个「向前看的」（*look-ahead*）动量向量：
+
+$$
+\begin{aligned}
+g_t &= \nabla_{\theta_t}J(\theta_t)\\  
+m_t &= \gamma m_{t-1} + \eta g_t\\  
+\theta_{t+1} &= \theta_t - (\gamma m_t + \eta g_t)
+\end{aligned}
+$$
+
+注意我们现在不再使用如上面展开的动量更新规则中的先前动量向量 $m_{t-1}$ ，而是使用当前动量向量 $m_t$ 来「向前看」。为了将 Nesterov 动量加进 Adam ，相似地我们可以用当前动量向量代替先前动量向量。首选，我们先回顾一下 Adam 的更新规则（注意我们不用修改 $\hat v_t$）：
+
+$$
+\begin{aligned} 
+m_t &= \beta_1 m_{t-1} + (1 - \beta_1) g_t\\  
+\hat{m}_t & = \frac{m_t}{1 - \beta^t_1}\\
+\theta_{t+1} &= \theta_{t} - \frac{\eta}{\sqrt{\hat{v}_t} + \epsilon} \hat{m}_t
+\end{aligned}
+$$
+
+将 $\hat m_t$ 和 $m_t$ 定义代入展开得到：
+
+$$\theta_{t+1} = \theta_{t} - \dfrac{\eta}{\sqrt{\hat{v}_t} + \epsilon} (\dfrac{\beta_1 m_{t-1}}{1 - \beta^t_1} + \dfrac{(1 - \beta_1) g_t}{1 - \beta^t_1})$$
+
+注意到 $\dfrac{m_{t-1}}{1-\beta_1^t}$ 是先前动量向量 $m_{t-1}$ 的偏差修正，因此我们可以用 $m_{t-1}$ 来代替之：
+
+$$\theta_{t+1} = \theta_{t} - \dfrac{\eta}{\sqrt{\hat{v}_t} + \epsilon} (\beta_1 \hat{m}_{t-1} + \dfrac{(1 - \beta_1) g_t}{1 - \beta^t_1})$$
+
+这个式子与我们上面展开得到的动量更新规则非常相似。我们可以加进 Nesterov 动量，就像我们之前一样简单地用当前动量向量的偏差修正估计 $\hat m_t$ 来代替先前动量向量的偏差修正估计 $\hat m_{t-1}$，得到 Nadam 的更新规则：
+
+$$\theta_{t+1} = \theta_{t} - \dfrac{\eta}{\sqrt{\hat{v}_t} + \epsilon} (\beta_1 \hat{m}_t + \dfrac{(1 - \beta_1) g_t}{1 - \beta^t_1})$$
+
+### Visualization of algorithms
+
+下面的两个动画（来自 [Alec Radford](https://twitter.com/alecrad)）提供了对当前优化算法行为的直观解释。也可以在 [这里](http://cs231n.github.io/neural-networks-3/) 查看 Karpathy 对这些动画的描述和对我们讨论过的算法的解释。
+
+![SGD optimization on loss surface contours](http://ruder.io/content/images/2016/09/contours_evaluation_optimizers.gif)  
+*图 5：在损失曲面等值线上的 SGD 优化*
+
+在图 5 中我们可以看到他们在损失曲面的等值线上（[the Beale function](https://www.sfu.ca/~ssurjano/beale.html)）随时间的变化趋势。注意到 Adadelta 、Adagrad 和 RMSprop 几乎立即开始在正确的方向下降并收敛速度几乎一样快，然而动量和 NAG 则「脱轨」了。不过由于 NAG 的「向前看」能力使其很快的纠正方向并朝着最小点前进。
+
+> *译者注：方便起见我把 Beale 函数的图像和解析式放在这里。*
+> ![Beale Function](https://www.sfu.ca/~ssurjano/beale.png)
+> $$f(\mathbf x) = (1.5-x_1+x_1x_2)^2 + (2.25-x_1+x_1x_2^2)^2 + (2.625-x_1+x_1+x_2^3)^2$$
+> 通常来说该函数的定义域为 $x_i \in [-4.5, 4.5]$ ，其中 $i = 1, 2$ 。全局最小点为 $f(\mathbf{x^*}) = 0$ ，当 $\mathbf{x^*} = (3, 0.5)$ 时 。
+
+![SGD optimization on saddle point](http://ruder.io/content/images/2016/09/saddle_point_evaluation_optimizers.gif)
+*图 6：在鞍点处的 SGD 优化*
+
+图 6 显示了在鞍点处的算法行为，即该点在一个方向斜率为正，其他方向斜率为负，正如我们之前提到的这对于 SGD 是一个难点。注意到 SGD 、动量和 NAG 很难打破对称性，尽管后两者最终逃离的鞍点，但是 Adagrad 、RMSprop 和 Adadelta 很快朝着斜率为负的方向前进了。
+
+可以看到自适应学习率的方法，例如 Adagrad 、Adadelta 、RMSprop 和 Adam 在这些场景中是最合适的并且提供了最好的收敛。
+
+### Which optimizer to use?
+
+那么，你应该使用哪种优化算法呢？如果你的数据比较稀疏，那么使用自适应学习率的算法很可能会让你得到最好的结果。另外一个好处是你不用去调节学习率，使用默认的设置可能就会让你达到最好的效果。
+
+总的来说，RMSprop 是 Adagrad 的一种扩展，用来解决后者学习率逐渐递减的问题。它和 Adadelta 非常像，除了 Adadelta 在更新规则的分子上使用参数更新的 RMS （*译者注：均方误差*）。Adam 最终在 RMSprop 的基础上加了偏差修正和动量。在这方面，RMSprop 、Adadelta 和 Adam 非常相似，在相似的环境下也表现地一样好。Kingma 等人 [15] 表示随着梯度越来越稀疏，Adam 的偏差修正使其略微优于 RMSprop 。在这个方面总体上来说 Adam 可能是最好的选择。
+
+有趣的是，许多最近的论文仅仅使用普通的不带动量 SGD 和一个简单的学习率退火机制（*annealing schedule*）。正如我们前面所讨论的，SGD 通常会找到最优点，但是相比其他一些优化算法可能花费的时间比较长，更依赖于一个好的初始化和退火机制，而且也可能陷入鞍点而不是局部最优点。所以，**如果你比较关心收敛速度并且在训练一个深度或者复杂的神经网络，你应该选择一个自适应学习率算法。**
+
+## Parallelizing and distributing SGD
+
