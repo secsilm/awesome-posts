@@ -2,7 +2,11 @@
 
 > 原文作者简介：[Sebastian Ruder](http://ruder.io/) 是我非常喜欢的一个博客作者，是 NLP 方向的博士生，目前供职于一家做 NLP 相关服务的爱尔兰公司 [AYLIEN](http://aylien.com/)，博客主要是写机器学习、NLP和深度学习相关的文章。
 
-> 本文原文是 [An overview of gradient descent optimization algorithms](http://ruder.io/optimizing-gradient-descent/index.html)，同时作者也在 arXiv 上发了一篇同样内容的 [论文](https://arxiv.org/abs/1609.04747)。本文结合了两者来翻译，但是阅读原文我个人建议读博客中的，感觉体验更好点。水平有限，如有错误欢迎指出。翻译尽量遵循原文意思，但不意味着逐字逐句。
+> - 本文原文是 [An overview of gradient descent optimization algorithms](http://ruder.io/optimizing-gradient-descent/index.html)，同时作者也在 arXiv 上发了一篇同样内容的 [论文](https://arxiv.org/abs/1609.04747)。
+> - 本文结合了两者来翻译，但是阅读原文我个人建议读博客中的，感觉体验更好点。
+> - 文中括号中或者引用块中的 *斜体字* 为对应的英文原文或者我自己注释的话（会标明 `译者注`），否则为原文中本来就有的话。
+> - 为方便阅读，我在引用序号后加了所引用论文的题目，用 *斜体字* 表示，例如 Learning rate schedules [11，*A stochastic approximation method*] 。
+> - 水平有限，如有错误欢迎指出。翻译尽量遵循原文意思，但不意味着逐字逐句。
 
 ## Abstract
 
@@ -89,9 +93,9 @@ for i in range(nb_epochs):
 标准的 MBGD 并不保证好的收敛，也提出了一下需要被解决的挑战：
 
 - **选择一个好的学习率是非常困难的**。太小的学习率导致收敛非常缓慢，而太大的学习率则会阻碍收敛，导致损失函数在最优点附近震荡甚至发散。
-- Learning rate schedules 试图在训练期间调整学习率即退火（annealing），根据先前定义好的一个规则来减小学习率，或者两次迭代之间目标函数的改变低于一个阈值的时候。然而这些规则和阈值也是需要在训练前定义好的，所以**也不能做到自适应数据的特点**。
+- Learning rate schedules [11，*A stochastic approximation method*] 试图在训练期间调整学习率即退火（annealing），根据先前定义好的一个规则来减小学习率，或者两次迭代之间目标函数的改变低于一个阈值的时候。然而这些规则和阈值也是需要在训练前定义好的，所以**也不能做到自适应数据的特点** [10，*Learning rate schedules for faster stochastic gradient search*]。
 - 另外，**相同的学习率被应用到所有参数更新中**。如果我们的数据比较稀疏，特征有非常多不同的频率，那么此时我们可能并不想要以相同的程度更新他们，反而是对更少出现的特征给予更大的更新。
-- 对于神经网络来说，另一个最小化高度非凸误差函数的关键挑战是**避免陷入他们大量的次局部最优点（suboptimal）**。Dauphin 等人指出事实上困难来自于鞍点而不是局部最优点，即损失函数在该点的一个维度上是上坡（slopes up）（ *译者注：斜率为正* ），而在另一个维度上是下坡（slopes down）（ *译者注：斜率为负* ）。这些鞍点通常被一个具有相同误差的平面所包围，这使得对于 SGD 来说非常难于逃脱，因为在各个维度上梯度都趋近于 0 。
+- 对于神经网络来说，另一个最小化高度非凸误差函数的关键挑战是**避免陷入他们大量的次局部最优点（suboptimal）**。Dauphin 等人 [19，*Identifying and attacking the saddle point problem in high-dimensional non-convex optimization*] 指出事实上困难来自于鞍点而不是局部最优点，即损失函数在该点的一个维度上是上坡（slopes up）（ *译者注：斜率为正* ），而在另一个维度上是下坡（slopes down）（ *译者注：斜率为负* ）。这些鞍点通常被一个具有相同误差的平面所包围，这使得对于 SGD 来说非常难于逃脱，因为在各个维度上梯度都趋近于 0 。
 
 ## Gradient descent optimization algorithms
 
@@ -99,12 +103,12 @@ for i in range(nb_epochs):
 
 ### Momentum
 
-SGD 在遇到沟壑（ravines）会比较困难，即在一个维度上比另一个维度更陡峭的曲面，这些曲面通常包围着局部最优点。在这些场景中，SGD 震荡且缓慢的沿着沟壑的下坡方向朝着局部最优点前进，如图 2 所示。
+SGD 在遇到沟壑（ravines）会比较困难，即在一个维度上比另一个维度更陡峭的曲面 [1，*Two problems with backpropagation and other steepest-descent learning procedures for networks*] ，这些曲面通常包围着局部最优点。在这些场景中，SGD 震荡且缓慢的沿着沟壑的下坡方向朝着局部最优点前进，如图 2 所示。
 
 ![SGD without momentum](http://ruder.io/content/images/2015/12/without_momentum.gif)  
 *图 2：不带动量的 SGD*
 
-动量（Momentum）是一种在相关方向加速 SGD 的方法，并且能够减少震荡，如图 3 所示。
+动量（Momentum）[2，*On the momentum term in gradient descent learning algorithms*] 是一种在相关方向加速 SGD 的方法，并且能够减少震荡，如图 3 所示。
 
 ![SGD without momentum](http://ruder.io/content/images/2015/12/with_momentum.gif)  
 *图 3：带动量的 SGD*
@@ -124,7 +128,9 @@ $$
 
 ### Nesterov accelerated gradient
 
-然而，一个球盲目的沿着斜坡下山，这不是我们希望看到的。我们希望有一个聪明的球，他知道将要去哪并可以在斜坡变成上坡前减速。Nesterov accelerated gradient（ *译者注：以下简称 NAG* ）就是这样一种给予我们的动量项预知能力的方法。我们知道我们使用动量项 $\gamma v_{t-1}$ 来更新 $\theta$。因此计算 $\theta-\gamma v_{t-1}$ 给了我们一个关于的参数下一个位置的估计（这里省略了梯度项），这是一个简单粗暴的想法。我们现在可以通过计算 $\theta$ 下一个位置而不是当前位置的梯度来实现「向前看」。
+然而，一个球盲目的沿着斜坡下山，这不是我们希望看到的。我们希望有一个聪明的球，他知道将要去哪并可以在斜坡变成上坡前减速。
+
+Nesterov accelerated gradient（ *译者注：以下简称 NAG* ）[7，*A method for unconstrained convex minimization problem with the rate of convergence o(1/k2)*] 就是这样一种给予我们的动量项预知能力的方法。我们知道我们使用动量项 $\gamma v_{t-1}$ 来更新 $\theta$。因此计算 $\theta-\gamma v_{t-1}$ 给了我们一个关于的参数下一个位置的估计（这里省略了梯度项），这是一个简单粗暴的想法。我们现在可以通过计算 $\theta$ 下一个位置而不是当前位置的梯度来实现「向前看」。
 
 $$
 \begin{aligned}
@@ -133,18 +139,18 @@ v_t &= \gamma v_{t-1} + \eta \nabla_\theta J( \theta - \gamma v_{t-1} ) \\
 \end{aligned}
 $$
 
-我们仍然设置 $\gamma$ 为 0.9。动量法首先计算当前梯度（图 4 中的小蓝色向量）,然后在更新累积梯度（updated accumulated gradient）方向上大幅度的跳跃（图 4 中的大蓝色向量）。与此不同的是，NAG 首先在先前的累积梯度（previous accumulated gradient）方向上进行大幅度的跳跃（图 4 中的棕色向量），评估这个梯度并做一下修正（图 4 中的红色向量），这就构成一次完整的 NAG 更新（图 4 中的绿色向量）。这种预期更新防止我们进行的太快，也带来了更高的相应速度，这在一些任务中非常有效的提升了 RNN 的性能 [8]。
+我们仍然设置 $\gamma$ 为 0.9。动量法首先计算当前梯度（图 4 中的小蓝色向量）,然后在更新累积梯度（updated accumulated gradient）方向上大幅度的跳跃（图 4 中的大蓝色向量）。与此不同的是，NAG 首先在先前的累积梯度（previous accumulated gradient）方向上进行大幅度的跳跃（图 4 中的棕色向量），评估这个梯度并做一下修正（图 4 中的红色向量），这就构成一次完整的 NAG 更新（图 4 中的绿色向量）。这种预期更新防止我们进行的太快，也带来了更高的相应速度，这在一些任务中非常有效的提升了 RNN 的性能 [8，*Advances in Optimizing Recurrent Networks*] 。
 
 ![Nesterov update](http://ruder.io/content/images/2016/09/nesterov_update_vector.png)  
 *图 4：Nesterov 更新，来自 [G. Hinton's lecture 6c](http://www.cs.toronto.edu/~tijmen/csc321/slides/lecture_slides_lec6.pdf)*
 
-可以在 [这里]() 查看对 NAG 的另一种直观解释，此外 Ilya Sutskever 在他的博士论文中也给出了详细解释 [9]。
+可以在 [这里]() 查看对 NAG 的另一种直观解释，此外 Ilya Sutskever 在他的博士论文中也给出了详细解释 [9，*Training Recurrent neural Networks*] 。
 
 现在我们已经能够依据误差函数的斜率来调整更新，并加快 SGD 的速度，此外我们也想根据每个参数的重要性来决定进行更大还是更小的更新。
 
 ### Adagrad
 
-Adagrad 就是这样一种解决这个问题的基于梯度的优化算法：根据参数来调整学习率，对于不常见的参数给予更大的更新，而对于常见的给予更小的更新。因此，Adagrad 非常适用于稀疏数据。Dean 等人 [4] 发现 Adagrad 能够大幅提高 SGD 的鲁棒性，并在 Google 用其训练大规模神经网络，这其中就包括 [在 YouTube 中学习识别猫](http://www.wired.com/2012/06/google-x-neural-network/)。除此之外，Pennington 等人 [5] 使用 Adagrad 来训练 GloVe 词嵌入，因为罕见的词汇需要比常见词更大的更新。
+Adagrad [3，*Adaptive Subgradient Methods for Online Learning and Stochastic Optimization*] 就是这样一种解决这个问题的基于梯度的优化算法：根据参数来调整学习率，对于不常见的参数给予更大的更新，而对于常见的给予更小的更新。因此，Adagrad 非常适用于稀疏数据。Dean 等人 [4，*Large Scale Distributed Deep Networks*] 发现 Adagrad 能够大幅提高 SGD 的鲁棒性，并在 Google 用其训练大规模神经网络，这其中就包括 [在 YouTube 中学习识别猫](http://www.wired.com/2012/06/google-x-neural-network/)。除此之外，Pennington 等人 [5，*Glove: Global Vectors for Word Representation*] 使用 Adagrad 来训练 GloVe 词嵌入，因为罕见的词汇需要比常见词更大的更新。
 
 前面我们在对所有参数 $\theta$ 更新时每个参数 $\theta_i$ 使用相同的学习率 $\eta$。Adagrad 在每个时间点 $t$ 对每个参数 $\theta_i$ 使用的学习率都不同，我们首先展现每个参数的更新，然后再向量化。简单起见，我们使用 $g_{t,i}$ 来表示目标函数关于参数 $\theta_i$ 在时间点 $t$ 时的梯度：
 
@@ -158,7 +164,7 @@ $$\theta_{t+1,i} = \theta_{t,i} - \eta \cdot g_{t,i}$$
 
 $$\theta_{t+1, i} = \theta_{t, i} - \dfrac{\eta}{\sqrt{G_{t, ii} + \epsilon}} \cdot g_{t, i}$$
 
-其中 $G_{t} \in \mathbb{R}^{d \times d}$ 是一个对角矩阵，对角元素 $G_t[i, i]$ 是参数 $\theta_i$ 从开始到时间点 $t$ 为止的梯度平方和，$\epsilon$ 是一个平滑项，用于防止分母为 0 ，通常为 $10^{-8}$ 左右。有趣的是，如果去掉开方操作，算法性能会大幅下降。
+其中 $G_{t} \in \mathbb{R}^{d \times d}$ 是一个对角矩阵，对角元素 $G_t[i, i]$ 是参数 $\theta_i$ 从开始到时间点 $t$ 为止的梯度平方和 [25]，$\epsilon$ 是一个平滑项，用于防止分母为 0 ，通常为 $10^{-8}$ 左右。有趣的是，如果去掉开方操作，算法性能会大幅下降。
 
 由于 $G_t$ 的对角元素是关于所有参数的过去的梯度的平方和，我们可以将上面的实现向量化，即使用点乘 $\odot$ ：
 
@@ -170,7 +176,7 @@ Adagrad 主要的缺点是分母中累积的平方和梯度：由于每一个新
 
 ### Adadelta
 
-Adadelta [6] 是 Adagrad 的扩展，旨在帮助缓解后者学习率单调下降的问题。与 Adagrad 累积过去所有梯度的平方和不同，Adadelta 限制在过去某个窗口大小为 $w$ 的大小内的梯度。
+Adadelta [6，*ADADELTA: An Adaptive Learning Rate Method*] 是 Adagrad 的扩展，旨在帮助缓解后者学习率单调下降的问题。与 Adagrad 累积过去所有梯度的平方和不同，Adadelta 限制在过去某个窗口大小为 $w$ 的大小内的梯度。
 
 存储先前 $w$ 个梯度的平方效率不高，Adadelta 的梯度平方和被递归的定义为过去所有梯度平方的衰减平均值（decaying average）。在 $t$ 时刻的平均值 $E[g^2]_t$ 仅仅取决于先前的平均值和当前的梯度：
 
@@ -233,7 +239,7 @@ RMSprop 也是将学习率除以平方梯度的指数衰减平均值。Hinton �
 
 ### Adam
 
-Adaptive Moment Estimation (Adam) [15] 是另一种为每个参数计算自适应学习率的方法。除了像 Adadelta 和 RMSprop 一样存储历史平方梯度 $v_t$ 的指数衰减平均值外，Adam 也存储历史梯度 $m_t$ 的指数衰减平均值，类似于动量：
+Adaptive Moment Estimation (Adam) [15，*Adam: a Method for Stochastic Optimization*] 是另一种为每个参数计算自适应学习率的方法。除了像 Adadelta 和 RMSprop 一样存储历史平方梯度 $v_t$ 的指数衰减平均值外，Adam 也存储历史梯度 $m_t$ 的指数衰减平均值，类似于动量：
 
 $$
 \begin{aligned}
@@ -288,7 +294,7 @@ $$\theta_{t+1} = \theta_{t} - \dfrac{\eta}{u_t} \hat{m}_t$$
 
  正如前面说的那样，Adam 可以看成 RMSprop 和动量的组合：RMSprop 贡献了历史平方梯度的指数衰减的平均值 $v_t$ ，而动量则负责历史梯度的指数衰减平均值 $m_t$ 。我们也看到 NAG 要优于普通的动量。
 
-Nadam（Nesterov-accelerated Adaptive Moment Estimation）[24] 结合了 Adam 和 NAG 。为了将 NAG 融进 Adam 中，我们需要更改其中的动量项 $m_t$ 。
+Nadam（Nesterov-accelerated Adaptive Moment Estimation）[24，*Incorporating Nesterov Momentum into Adam*] 结合了 Adam 和 NAG 。为了将 NAG 融进 Adam 中，我们需要更改其中的动量项 $m_t$ 。
 
 首先，让我们使用当前的符号回顾一下动量更新规则：
 
@@ -373,9 +379,96 @@ $$\theta_{t+1} = \theta_{t} - \dfrac{\eta}{\sqrt{\hat{v}_t} + \epsilon} (\beta_1
 
 那么，你应该使用哪种优化算法呢？如果你的数据比较稀疏，那么使用自适应学习率的算法很可能会让你得到最好的结果。另外一个好处是你不用去调节学习率，使用默认的设置可能就会让你达到最好的效果。
 
-总的来说，RMSprop 是 Adagrad 的一种扩展，用来解决后者学习率逐渐递减的问题。它和 Adadelta 非常像，除了 Adadelta 在更新规则的分子上使用参数更新的 RMS （*译者注：均方误差*）。Adam 最终在 RMSprop 的基础上加了偏差修正和动量。在这方面，RMSprop 、Adadelta 和 Adam 非常相似，在相似的环境下也表现地一样好。Kingma 等人 [15] 表示随着梯度越来越稀疏，Adam 的偏差修正使其略微优于 RMSprop 。在这个方面总体上来说 Adam 可能是最好的选择。
+总的来说，RMSprop 是 Adagrad 的一种扩展，用来解决后者学习率逐渐递减的问题。它和 Adadelta 非常像，除了 Adadelta 在更新规则的分子上使用参数更新的 RMS （*译者注：均方误差*）。Adam 最终在 RMSprop 的基础上加了偏差修正和动量。在这方面，RMSprop 、Adadelta 和 Adam 非常相似，在相似的环境下也表现地一样好。Kingma 等人 [15，*Adam: a Method for Stochastic Optimization*] 表示随着梯度越来越稀疏，Adam 的偏差修正使其略微优于 RMSprop 。在这个方面总体上来说 Adam 可能是最好的选择。
 
 有趣的是，许多最近的论文仅仅使用普通的不带动量 SGD 和一个简单的学习率退火机制（*annealing schedule*）。正如我们前面所讨论的，SGD 通常会找到最优点，但是相比其他一些优化算法可能花费的时间比较长，更依赖于一个好的初始化和退火机制，而且也可能陷入鞍点而不是局部最优点。所以，**如果你比较关心收敛速度并且在训练一个深度或者复杂的神经网络，你应该选择一个自适应学习率算法。**
 
 ## Parallelizing and distributing SGD
 
+鉴于大数据解决方案的普及以及低价集群的可用性，使用分布式 SGD 来进一步加速训练是一个很明显的选择。SGD 本质上是按顺序执行的：我们一步一步朝着最优点前进。SGD 提供了较好的收敛但是在大数据集上可能会速度较慢。相反，异步执行 SGD 比较快，但是 worker 之间不理想的通信可能会造成比较差的收敛。另外，我们也可以不需要大型计算集群，在一台机器上并行执行 SGD 。下面是目前提出的用于优化并行和分布式 SGD 的算法和架构。
+
+### Hogwild!
+
+Niu 等人 [23，*Hogwild! : A Lock-Free Approach to Parallelizing Stochastic Gradient Descent*] 引入了一个更新机制称为 Hogwild!，可以在 CPU 上并行执行 SGD 。处理器可以在不锁参数的情况下访问共享内存。由于没次更新只修改一部分参数，所以这种方法只适合于输入数据比较稀疏的情况。他们表明在这种情况下该方法可以达到几乎最优的收敛速度，因为处理器是不太可能覆盖有用信息的。
+
+### Downpour SGD
+
+Downpour SGD 是一种 SGD 的异步变体，由 Dean 等人 [4，*Large Scale Distributed Deep Networks*] 在谷歌的 DistBelief 框架（TensorFlow 的前身）中使用。它在训练数据的子集上并行的运行一个模型的多个副本。这些模型将他们的更新发送到一个参数服务器，他们分布在多个机器上。每个机器只负责存储和更新全部模型参数的一部分。然而由于这些机器并不需要相互通信，例如共享权重或者更新，导致他们的参数一直有发散的风险，阻碍收敛。
+
+### Delay-tolerant Algorithms for SGD
+
+McMahan 和 Streeter [12，*Delay-Tolerant Algorithms for Asynchronous Distributed Online Learning*] 通过开发一个延迟容忍（delay-tolerant）算法来扩展 Adagrad 使其并行化，该算法不仅自适应历史梯度，而且也更新延迟（delays）。在实际中也被证明该方法很有效。
+
+### TensorFlow
+
+TensorFlow [13，*TensorFlow : Large-Scale Machine Learning on Heterogeneous Distributed System*] 是 Google 最近开源的用于实现和部署大规模机器学习模型的框架。TensorFlow 基于他们使用 DistBelief 的经验，并且已经在内部使用，用于在大范围的移动设备和大规模分布式系统上执行计算。分布式执行中，一个计算图针对每一个设备被拆分成多个子图，使用发送/接收节点对进行通信。
+
+### Elastic Averaging SGD
+
+Zhang 等人 [14，*Deep learning with Elastic Averaging SGD*] 提出了 Elastic Averaging SGD（EASGD），将异步 SGD 中每个 worker 参数用一个「弹力」（*elastic force*）连接起来，即一个由参数服务器保存的中心变量。这允许本地变量在中心变量附近进一步震荡，这理论上可以在更大的参数空间中进行探索。他们以经验证明这种增加的探索能力可以寻找新的局部最优点从而提升性能。
+
+## Additional strategies for optimizing SGD
+
+最后，我们介绍一些可以和前面讨论的算法一起使用的策略，用以进一步提升 SGD 的性能。对于一些其他常用的技巧，可以参见 [22，*Efficient BackProp. Neural Networks: Tricks of the Trade*] 。
+
+### Shuffling and Curriculum Learning
+
+通常，我们想要避免给模型提供的训练数据是有特定顺序的，因为这会使模型带有偏见。因此，每次迭代完之后打乱训练数据是一个很好地想法。
+
+但是另一方面，有些情况下我们想要逐步解决更难的问题，我们将训练数据以一种有意义的顺序提供给模型，这可能会提升性能和得到更好的收敛。构建这种有意义的顺序的方法称为课程学习（*Curriculum Learning*）[16，*Curriculum learning*] 。
+
+Zaremba 和 Sutskever [17，*Learning to Execute*] 只能训练 LSTMs 来评估使用课程学习的简单程序，而且表明组合或者混合的方法要比单一方法更有效，通过增加难度来排序样本。
+
+### Batch normalization
+
+为方便学习，我们一般会正规化（*normalize*）参数的初始值，以 0 均值和单位方差来初始化。随着训练的进行和我们将参数更新到不同的程度，我们损失了这种正规化，导致训练速度变慢并且随着网络越来越深，这种影响被渐渐放大。
+
+Batch normalization [18，*Batch Normalization : Accelerating Deep Network Training by Reducing Internal Covariate Shift*] 重新为每一个 mini-batch 建立了这种正规化并且变化也会随着这个操作反向传播。通过在模型中加入正规化，我们可以使用更高的学习率而且不用太关心参数的初始化。Batch normalization 此外也扮演者正则化的角色，可以减少（甚至有些时候消除）Dropout 的需要.
+
+### Early stopping
+
+根据 Geoff Hinton: "*Early stopping (is) beautiful free lunch*"（[NIPS 2015 Tutorial slides](http://www.iro.umontreal.ca/~bengioy/talks/DL-Tutorial-NIPS2015.pdf)，slide 63），你应该在训练时时刻监视着验证集误差，并且在你的验证集误差不再足够地降低时停止训练。
+
+### Gradient noise
+
+Neelakantan 等人 [21，*Adding Gradient Noise Improves Learning for Very Deep Network*] 在每次梯度更新时加上一个服从高斯分布 $N(0, \sigma_t^2)$ 的噪声：
+
+$$g_{t, i} = g_{t, i} + N(0, \sigma^2_t)$$
+
+他们依照下面的公式更新（*anneal*）方差：
+
+$$\sigma^2_t = \dfrac{\eta}{(1 + t)^\gamma}$$
+
+他们表明添加这个噪声使得网络对较差的初始化更具有鲁棒性并且尤其对训练深度和复杂的网络很有帮助。他们怀疑添加的噪声使得模型有更多机会逃离和找到新的局部最优点，这在深度模型中很常见。
+
+## Conclusion
+
+本文中，我们首先看了梯度下降的 3 中变体，其中 mini-batch 梯度下降最流行。我们然后研究了几种最常使用的用于优化 SGD 的算法：动量，Nesterov accelerated gradient，Adagrad，Adadelta，RMSprop，Adam 以及为优化异步 SGD 的不同算法。最后，我们考虑了用于提升 SGD 性能的其他策略，例如 shuffling 与 curriculum learning，batch normalization 以及 early stopping。我希望这篇文章可以给你提供一个关于不同优化算法的行为和动机的直观理解。
+
+## References
+
+1. Sutton, R. S. (1986). Two problems with backpropagation and other steepest-descent learning procedures for networks. Proc. 8th Annual Conf. Cognitive Science Society.
+2. Qian, N. (1999). On the momentum term in gradient descent learning algorithms. Neural Networks : The Official Journal of the International Neural Network Society, 12(1), 145–151. http://doi.org/10.1016/S0893-6080(98)00116-6
+3. Duchi, J., Hazan, E., & Singer, Y. (2011). Adaptive Subgradient Methods for Online Learning and Stochastic Optimization. Journal of Machine Learning Research, 12, 2121–2159. Retrieved from http://jmlr.org/papers/v12/duchi11a.html
+4. Dean, J., Corrado, G. S., Monga, R., Chen, K., Devin, M., Le, Q. V, … Ng, A. Y. (2012). Large Scale Distributed Deep Networks. NIPS 2012: Neural Information Processing Systems, 1–11. http://doi.org/10.1109/ICDAR.2011.95
+5. Pennington, J., Socher, R., & Manning, C. D. (2014). Glove: Global Vectors for Word Representation. Proceedings of the 2014 Conference on Empirical Methods in Natural Language Processing, 1532–1543. http://doi.org/10.3115/v1/D14-1162
+6. Zeiler, M. D. (2012). ADADELTA: An Adaptive Learning Rate Method. Retrieved from http://arxiv.org/abs/1212.5701
+7. Nesterov, Y. (1983). A method for unconstrained convex minimization problem with the rate of convergence o(1/k2). Doklady ANSSSR (translated as Soviet.Math.Docl.), vol. 269, pp. 543– 547.
+8. Bengio, Y., Boulanger-Lewandowski, N., & Pascanu, R. (2012). Advances in Optimizing Recurrent Networks. Retrieved from http://arxiv.org/abs/1212.0901
+9. Sutskever, I. (2013). Training Recurrent neural Networks. PhD Thesis.
+10. Darken, C., Chang, J., & Moody, J. (1992). Learning rate schedules for faster stochastic gradient search. Neural Networks for Signal Processing II Proceedings of the 1992 IEEE Workshop, (September), 1–11. http://doi.org/10.1109/NNSP.1992.253713
+11. H. Robinds and S. Monro, “A stochastic approximation method,” Annals of Mathematical Statistics, vol. 22, pp. 400–407, 1951.
+12. Mcmahan, H. B., & Streeter, M. (2014). Delay-Tolerant Algorithms for Asynchronous Distributed Online Learning. Advances in Neural Information Processing Systems (Proceedings of NIPS), 1–9. Retrieved from http://papers.nips.cc/paper/5242-delay-tolerant-algorithms-for-asynchronous-distributed-online-learning.pdf
+13. Abadi, M., Agarwal, A., Barham, P., Brevdo, E., Chen, Z., Citro, C., … Zheng, X. (2015). TensorFlow : Large-Scale Machine Learning on Heterogeneous Distributed Systems.
+14. Zhang, S., Choromanska, A., & LeCun, Y. (2015). Deep learning with Elastic Averaging SGD. Neural Information Processing Systems Conference (NIPS 2015), 1–24. Retrieved from http://arxiv.org/abs/1412.6651
+15. Kingma, D. P., & Ba, J. L. (2015). Adam: a Method for Stochastic Optimization. International Conference on Learning Representations, 1–13.
+16. Bengio, Y., Louradour, J., Collobert, R., & Weston, J. (2009). Curriculum learning. Proceedings of the 26th Annual International Conference on Machine Learning, 41–48. http://doi.org/10.1145/1553374.1553380
+17. Zaremba, W., & Sutskever, I. (2014). Learning to Execute, 1–25. Retrieved from http://arxiv.org/abs/1410.4615
+18. Ioffe, S., & Szegedy, C. (2015). Batch Normalization : Accelerating Deep Network Training by Reducing Internal Covariate Shift. arXiv Preprint arXiv:1502.03167v3.
+19. Dauphin, Y., Pascanu, R., Gulcehre, C., Cho, K., Ganguli, S., & Bengio, Y. (2014). Identifying and attacking the saddle point problem in high-dimensional non-convex optimization. arXiv, 1–14. Retrieved from http://arxiv.org/abs/1406.2572
+20. Sutskever, I., & Martens, J. (2013). On the importance of initialization and momentum in deep learning. http://doi.org/10.1109/ICASSP.2013.6639346
+21. Neelakantan, A., Vilnis, L., Le, Q. V., Sutskever, I., Kaiser, L., Kurach, K., & Martens, J. (2015). Adding Gradient Noise Improves Learning for Very Deep Networks, 1–11. Retrieved from http://arxiv.org/abs/1511.06807
+22. LeCun, Y., Bottou, L., Orr, G. B., & Müller, K. R. (1998). Efficient BackProp. Neural Networks: Tricks of the Trade, 1524, 9–50. http://doi.org/10.1007/3-540-49430-8_2
+23. Niu, F., Recht, B., Christopher, R., & Wright, S. J. (2011). Hogwild! : A Lock-Free Approach to Parallelizing Stochastic Gradient Descent, 1–22.
+24. Dozat, T. (2016). Incorporating Nesterov Momentum into Adam. ICLR Workshop, (1), 2013–2016.
+25. Duchi et al. [3] give this matrix as an alternative to the full matrix containing the outer products of all previous gradients, as the computation of the matrix square root is infeasible even for a moderate number of parameters dd.
