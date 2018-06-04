@@ -1,11 +1,3 @@
----
-title: 理解神经网络中的目标函数
-date: 2018-6-4 21:10:29
-tags: 
-  - Machine Learning
-header_image: https://i.imgur.com/4eldP4d.jpg
----
-
 > 译者注：
 > - 本文翻译自 [Lars Hulstaert](https://towardsdatascience.com/@lars.hulstaert) 于 2017 年 11 月 4 日发表的文章 [Understanding objective functions in neural networks](https://towardsdatascience.com/understanding-objective-functions-in-neural-networks-d217cb068138)。
 > - 文中括号或者引用块中的 *斜体字* 为对应的英文原文或者我自己注释的话（会标明「译者注」），否则为原文中本来就有的话。
