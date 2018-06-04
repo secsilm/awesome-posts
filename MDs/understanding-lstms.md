@@ -1,17 +1,9 @@
----
-title: 理解 LSTM 网络
-date:
-tags:
-  - Machine Learning
-  - Translation
-header_image: https://i.imgur.com/NSng4cv.png
----
-
 > 译者注：
-- 本文原文为 Christopher Olah 于 2015 年发表在自己[博客](http://colah.github.io/)上的经典文章：[Understanding LSTM Networks -- colah's blog](http://colah.github.io/posts/2015-08-Understanding-LSTMs/)。
-- 没有翻译原文中的 Acknowledgments 部分，此部分为致谢，私以为无关。
-- 文中括号或者引用块中的 *斜体字* 为对应的英文原文或者我自己注释的话（会标明 *译者注*），否则为原文中本来就有的话。
-- 本人水平有限，如有错误欢迎指出。
+>
+> - 本文原文为 Christopher Olah 于 2015 年发表在自己[博客](http://colah.github.io/)上的经典文章：[Understanding LSTM Networks -- colah's blog](http://colah.github.io/posts/2015-08-Understanding-LSTMs/)。
+> - 没有翻译原文中的 Acknowledgments 部分，此部分为致谢，私以为无关。
+> - 文中括号或者引用块中的 *斜体字* 为对应的英文原文或者我自己注释的话（会标明 *译者注*），否则为原文中本来就有的话。
+> - 本人水平有限，如有错误欢迎指出。
 
 ## Recurrent Neural Networks
 
