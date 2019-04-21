@@ -9,3 +9,4 @@
 - 理解 LSTM 网络（[MD](MDs/understanding-lstms.md)，[博客](https://alanlee.fun/2017/12/29/understanding-lstms/)）
 - 理解神经网络中的目标函数（[MD](MDs/understanding-objective-functions-in-neural-networks.md)，[PDF](PDFs/理解神经网络中的目标函数.pdf)，[博客](https://alanlee.fun/2018/06/04/understanding-objective-functions-in-neural-networks/)）
 - 使用 TensorFlow Estimators 进行文本分类（[MD](MDs/text-classification-with-tensorflow-estimator.md)，[PDF](PDFs/text-classification-with-tensorflow-estimator.pdf)，[博客](https://alanlee.fun/2018/07/18/text-classification-with-tensorflow-estimator/)）
+- 理解主成分分析（[MD](MDs/understanding-pca.md)，[PDF](PDFs/understanding-pca.pdf)，[博客](https://alanlee.fun/2019/04/13/understanding-pca/)）
